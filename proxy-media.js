@@ -7,21 +7,13 @@ app.get('/chatwoot/:filename', async (req, res) => {
     const filename = req.params.filename;
     const minioUrl = `https://s3minio.ruch.com.br/chatwoot/${filename}`;
     
-    const headResponse = await axios.head(minioUrl);
-    const contentType = headResponse.headers['content-type'];
+    // Busca a imagem do MinIO
+    const response = await axios.get(minioUrl, { responseType: 'arraybuffer' });
+    const contentType = response.headers['content-type'];
     
-    const extensions = {
-      'image/png': '.png',
-      'image/jpeg': '.jpg',
-      'image/jpg': '.jpg',
-      'image/gif': '.gif',
-      'image/webp': '.webp',
-      'video/mp4': '.mp4',
-      'application/pdf': '.pdf'
-    };
-    
-    const ext = extensions[contentType] || '';
-    res.redirect(302, `${minioUrl}?filename=file${ext}`);
+    // Retorna a imagem com Content-Type correto
+    res.set('Content-Type', contentType);
+    res.send(response.data);
     
   } catch (error) {
     console.error('Error:', error.message);
@@ -29,26 +21,16 @@ app.get('/chatwoot/:filename', async (req, res) => {
   }
 });
 
-// Mantém a rota sem /chatwoot também
 app.get('/:filename', async (req, res) => {
   try {
     const filename = req.params.filename;
     const minioUrl = `https://s3minio.ruch.com.br/chatwoot/${filename}`;
     
-    const headResponse = await axios.head(minioUrl);
-    const contentType = headResponse.headers['content-type'];
+    const response = await axios.get(minioUrl, { responseType: 'arraybuffer' });
+    const contentType = response.headers['content-type'];
     
-    const extensions = {
-      'image/png': '.png',
-      'image/jpeg': '.jpg',
-      'image/gif': '.gif',
-      'image/webp': '.webp',
-      'video/mp4': '.mp4',
-      'application/pdf': '.pdf'
-    };
-    
-    const ext = extensions[contentType] || '';
-    res.redirect(302, `${minioUrl}?filename=file${ext}`);
+    res.set('Content-Type', contentType);
+    res.send(response.data);
     
   } catch (error) {
     console.error('Error:', error.message);

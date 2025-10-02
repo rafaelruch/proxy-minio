@@ -1,12 +1,13 @@
-// proxy-media.js
 const express = require('express');
 const axios = require('axios');
 const app = express();
 
-app.get('/media/:filename', async (req, res) => {
+app.get('/:filename', async (req, res) => {
   try {
     const filename = req.params.filename;
-    const minioUrl = `https://s3minio.ruch.com.br/chatwoot/${filename}`;
+    // Remove a extensão se vier na URL
+    const filenameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+    const minioUrl = `https://s3minio.ruch.com.br/chatwoot/${filenameWithoutExt}`;
     
     // Busca metadados do arquivo
     const headResponse = await axios.head(minioUrl);
@@ -25,13 +26,12 @@ app.get('/media/:filename', async (req, res) => {
     
     const ext = extensions[contentType] || '';
     
-    // Redireciona para URL com extensão como query param
-    // A Evolution vai ver isso como nome de arquivo
-    res.redirect(`${minioUrl}?filename=${filename}${ext}`);
+    // Redireciona com extensão
+    res.redirect(302, `${minioUrl}?filename=file${ext}`);
     
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Error');
+    console.error('Error:', error.message);
+    res.status(500).send(`Error: ${error.message}`);
   }
 });
 
